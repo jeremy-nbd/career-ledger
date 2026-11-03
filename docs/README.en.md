@@ -11,7 +11,7 @@ It also includes a **daily journal and weekly reports**: record completed work, 
 Requires Node.js 22+. No runtime packages, database installation, or build step.
 
 ```bash
-git clone https://github.com/JeremyJie12/career-ledger.git
+git clone https://github.com/jeremy-nbd/career-ledger.git
 cd career-ledger
 npm start
 ```

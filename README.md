@@ -6,7 +6,7 @@
 
 A local-first career evidence agent. Turn work notes into reviewed experience cards and job-specific, source-linked resume drafts.
 
-[![Tests](https://github.com/JeremyJie12/career-ledger/actions/workflows/test.yml/badge.svg)](https://github.com/JeremyJie12/career-ledger/actions/workflows/test.yml)
+[![Tests](https://github.com/jeremy-nbd/career-ledger/actions/workflows/test.yml/badge.svg)](https://github.com/jeremy-nbd/career-ledger/actions/workflows/test.yml)
 ![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-45674f)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 ![Zero runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-677f59)
@@ -48,7 +48,7 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 需要 **Node.js 22 或更新版本**。无运行时依赖，无需安装数据库或执行构建。
 
 ```bash
-git clone https://github.com/JeremyJie12/career-ledger.git
+git clone https://github.com/jeremy-nbd/career-ledger.git
 cd career-ledger
 npm start
 ```
