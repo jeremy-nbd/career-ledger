@@ -21,7 +21,7 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 
 **原始记录 → 带引用的经历草稿 → 本人核对 → 岗位要求与证据对应 → Markdown 经历精选。**
 
-![经历库实际界面，使用虚构人物资料](docs/preview.png)
+![经历库展示：完整卡片、确认状态与原文证据，使用虚构演示资料](docs/library-showcase.jpg)
 
 ## 一个具体例子
 
@@ -131,7 +131,7 @@ CAREER_DATA_DIR=./data/demo npm start
 
 本地模式只合并完全相同条目，不能判断周一的计划是否已在周三完成，也不会把历史阻碍自动标为未解决。界面会提示你核对这些状态。模型模式可按时间顺序归纳，但同样需要复核。没有记录的日期不会被编造补齐。
 
-![日报生成的工作周报，使用虚构演示内容](docs/weekly-preview.png)
+![周报工作流：日期范围选择与生成结果的实际界面局部并排展示，使用虚构演示资料](docs/weekly-showcase.jpg)
 
 单次周报支持最多 30 条日报、合计 60,000 字符；保留最近 100 份周报。日报没有静默覆盖接口，同日的新内容作为追加记录保存。
 
