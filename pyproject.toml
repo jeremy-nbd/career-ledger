@@ -1,0 +1,6 @@
+[project]
+name = "career-ledger"
+version = "0.2.0"
+description = "Local-first career evidence agent with traceable weekly reports"
+requires-python = ">=3.9"
+dependencies = []

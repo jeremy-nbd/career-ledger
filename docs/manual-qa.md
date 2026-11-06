@@ -1,6 +1,6 @@
 # Manual acceptance flow
 
-Use a separate data directory, e.g. `CAREER_DATA_DIR=./data/qa npm start`. All inputs below are fictional.
+Use a separate data directory, e.g. `CAREER_DATA_DIR=./data/qa python3 -m career_ledger`. All inputs below are fictional.
 
 1. Open the app with no data. Verify empty states and that Agent mode is disabled without configuration.
 2. Load the fictional demo. Expect four sources, three confirmed cards, and one draft.

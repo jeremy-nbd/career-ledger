@@ -2,9 +2,9 @@
 
 Thanks for helping make career evidence easier to maintain.
 
-1. Use Node.js 22+ and run `npm start`.
+1. Use Python 3.9+ and run `python3 -m career_ledger`.
 2. Make a focused change with fictional fixtures.
-3. Run `npm run check` and `npm test`.
+3. Run `python3 -m compileall -q career_ledger` and `python3 -m unittest discover -s tests -v`.
 4. Describe the user-visible behavior, evidence boundary and validation in your pull request.
 
 Keep the modes honest: local keyword matching is not semantic evaluation. Generated claims must remain drafts. Any change to confirmation, citations or exports should include a regression test showing why it is needed.

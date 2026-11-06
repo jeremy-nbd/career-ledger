@@ -8,3 +8,9 @@ coverage/
 .DS_Store
 playwright-report/
 test-results/
+
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/

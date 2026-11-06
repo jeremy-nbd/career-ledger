@@ -7,7 +7,7 @@
 A local-first career evidence agent. Turn work notes into reviewed experience cards and job-specific, source-linked resume drafts.
 
 [![Tests](https://github.com/jeremy-nbd/career-ledger/actions/workflows/test.yml/badge.svg)](https://github.com/jeremy-nbd/career-ledger/actions/workflows/test.yml)
-![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-45674f)
+![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-3776AB)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 ![Zero runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-677f59)
 
@@ -52,12 +52,12 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 | 层次 | 当前实现 | 职责与代码入口 |
 | --- | --- | --- |
 | 界面 | 原生 HTML / CSS / JavaScript、ES Modules | 日报录入、日期范围选择、原文核对与报告展示；`public/` |
-| HTTP 服务 | Node.js 22+ 原生 `node:http` | 提供 JSON API 和静态文件，处理本机访问限制；`src/server.js` |
-| 领域逻辑 | JavaScript 确定性函数 | 内容去重、日期筛选、引用校验、本地整理与 Markdown 导出；`src/domain.js` |
-| Agent | 原生 `fetch` + Chat Completions 兼容接口 | 定义工具、执行模型请求循环、回传校验错误；`src/agent.js` |
-| 数据存储 | 本地 JSON 文件 + 进程内串行写入 + 临时文件替换 | 保存原文、经历、报告和修订历史；`src/store.js` |
-| 删除恢复 | 软删除标记与删除批次 | 处理来源与经历的关联删除、恢复；`src/trash.js` |
-| 验证 | `node:test` + GitHub Actions | 领域测试、模拟模型工具调用、HTTP 集成测试；CI 覆盖 Node.js 22 / 24 |
+| HTTP 服务 | Python 标准库 `http.server` | 提供 JSON API 和静态文件，处理本机访问限制；`career_ledger/server.py` |
+| 领域逻辑 | Python 确定性函数 | 内容去重、日期筛选、引用校验、本地整理与 Markdown 导出；`career_ledger/domain.py` |
+| Agent | Python `urllib.request` + Chat Completions 兼容接口 | 定义工具、执行模型请求循环、回传校验错误；`career_ledger/agent.py` |
+| 数据存储 | 本地 JSON 文件 + 进程内串行写入 + 临时文件替换 | 保存原文、经历、报告和修订历史；`career_ledger/store.py` |
+| 删除恢复 | 软删除标记与删除批次 | 处理来源与经历的关联删除、恢复；`career_ledger/trash.py` |
+| 验证 | `unittest` + GitHub Actions | 领域测试、模拟模型工具调用、HTTP 集成测试；CI 覆盖 Python 3.9 / 3.12 / 3.14 |
 
 当前无运行时第三方依赖，也没有前端构建步骤，方便本机启动与阅读源码。存储面向单人、单进程使用；尚未接入数据库、向量检索或多 Agent 编排框架。
 
@@ -67,7 +67,7 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 2. **模型选择工具**：模型通过 `tool_calls` 请求读取原文或检索经历。经历检索目前采用文本子串匹配，每次最多返回 30 条卡片及其引用。
 3. **程序执行并返回结果**：服务端执行允许的工具，将结果作为工具消息交回模型，模型据此继续调查或提交结构化结果。
 4. **校验与修正**：`finish_card`、`finish_match`、`finish_weekly` 的结果经过领域校验，检查原文引用、来源 ID、JD 原句及经历确认状态等。工具参数或结果不合格时，错误返回模型供下一轮修正。
-5. **保存与人工复核**：通过校验的经历进入草稿，需本人确认后才能用于岗位分析；周报与岗位分析保存生成时的证据快照，供复核和导出。每次任务最多请求模型 7 轮，单次请求超时 45 秒。
+5. **保存与人工复核**：通过校验的经历进入草稿，需本人确认后才能用于岗位分析；周报与岗位分析保存生成时的证据快照，供复核和导出。每次任务最多请求模型 7 轮，网络读写超时为 45 秒。
 
 这套流程中的 Agent 是一个按任务配置工具的调用循环。它可以读取、检索和提交建议，但不能直接确认经历、执行任意代码或自动投递简历。逐字引用校验只能证明引文存在，结论是否受到引文支持仍需人工判断。
 
@@ -83,12 +83,12 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 
 ## 快速开始
 
-需要 **Node.js 22 或更新版本**。无运行时依赖，无需安装数据库或执行构建。
+需要 **Python 3.9 或更新版本**。无运行时依赖，无需安装数据库或执行构建。
 
 ```bash
 git clone https://github.com/jeremy-nbd/career-ledger.git
 cd career-ledger
-npm start
+python3 -m career_ledger
 ```
 
 打开 **http://127.0.0.1:4317**。
@@ -103,10 +103,12 @@ npm start
 演示只允许载入空账本，避免混入现有资料。若要单独体验示例，可用独立数据目录启动：
 
 ```bash
-CAREER_DATA_DIR=./data/demo npm start
+CAREER_DATA_DIR=./data/demo python3 -m career_ledger
 ```
 
-日常账本仍使用默认的 `data/ledger.json`。同一数据目录只运行一个服务进程。
+日常账本仍使用默认的 `data/ledger.json`。同一数据目录只运行一个服务进程。Python 服务会获取数据目录进程锁。
+
+从旧版升级时，先停止原有 Node.js 服务并备份账本，再执行上述 Python 启动命令。Python 版直接读取原有 `.env` 和 version-1 `ledger.json`，保留日报、经历修订、回收站及报告快照。Windows 可将命令中的 `python3` 替换为 `python`。
 
 ## 两种模式，明确区分
 
@@ -167,9 +169,9 @@ Agent 的工具只有：
 | `read_week_notes` | 只读取所选开始日到结束日之间的日报（包含首尾日期） |
 | `finish_weekly` | 提交附有日报引用的周报，校验每条引文 |
 
-每次任务最多 7 轮模型请求，每次请求超时 45 秒。无效引用、虚构经历 ID 和缺失证据会返回模型修正；超过上限显式失败，不静默冒充成功。界面可查看工具执行摘要（不展示或存储模型私有推理）。
+每次任务最多 7 轮模型请求，网络读写超时为 45 秒。无效引用、虚构经历 ID 和缺失证据会返回模型修正；超过上限显式失败，不静默冒充成功。界面可查看工具执行摘要（不展示或存储模型私有推理）。
 
-> 自动化测试通过模拟兼容接口验证工具调用、错误修正和失败恢复。2026-11-02 使用 `qwen3.5-plus` 和虚构记录实测通过了经历草稿链路（读取原文、提交草稿、引用校验）；岗位匹配与周报尚未进行该模型的真实接口验收。不同提供商仍需分别验证兼容性。
+> 自动化测试通过模拟兼容接口验证工具调用、错误修正和失败恢复。迁移前的 JavaScript 后端于 2026-11-02 使用 `qwen3.5-plus` 和虚构记录实测通过了经历草稿链路（读取原文、提交草稿、引用校验）；岗位匹配与周报尚未进行该模型的真实接口验收。Python 后端已通过模拟接口回归验证，真实模型服务需单独验收。
 
 ## 本地资料与备份
 
@@ -187,22 +189,22 @@ Agent 的工具只有：
 ## 开发与验证
 
 ```bash
-npm run dev
-npm run check
-npm test
+python3 -m career_ledger
+python3 -m compileall -q career_ledger
+python3 -m unittest discover -s tests -v
 ```
 
 测试覆盖原文去重、证据校验、贡献确认、修订冲突、不可变岗位快照、导出、并发保存、模型工具循环与失败恢复，以及日报去重、跨年日期范围、计划与成果分离和周报快照。所有模型测试使用模拟响应，不消耗 API 额度。集成测试需要允许进程绑定本机临时端口。
 
 ```text
-src/
-  agent.js       工具调用循环与兼容模型客户端
-  domain.js      证据规则、本地模式、确定性导出
-  server.js      HTTP API、本机访问限制
-  store.js       串行写入与原子替换
+career_ledger/
+  agent.py       工具调用循环与兼容模型客户端
+  domain.py      证据规则、本地模式、确定性导出
+  server.py      HTTP API、本机访问限制
+  store.py       串行写入与原子替换
 public/          无构建步骤的中文界面
 examples/        虚构经历与岗位
-test/            领域、Agent 与 HTTP 集成测试
+tests/           领域、Agent 与 HTTP 集成测试
 docs/            设计说明、英文介绍与手动验收流程
 ```
 

@@ -8,12 +8,12 @@ It also includes a **daily journal and weekly reports**: record completed work, 
 
 ## Run
 
-Requires Node.js 22+. No runtime packages, database installation, or build step.
+Requires Python 3.9+. No runtime packages, database installation, or build step.
 
 ```bash
 git clone https://github.com/jeremy-nbd/career-ledger.git
 cd career-ledger
-npm start
+python3 -m career_ledger
 ```
 
 Open http://127.0.0.1:4317. The interface is currently in Chinese. Load the fictional demo into an empty ledger to explore three reviewed cards, an unresolved contribution claim, and two sample job descriptions.
@@ -27,9 +27,9 @@ Generated cards start as drafts. Users review ownership, outcomes, and exact sou
 ## Modes
 
 - **Local rules:** preserves source excerpts and identifies keyword overlap. No model calls; no claims of semantic matching or qualification scoring.
-- **Agent:** uses `read_source` and `search_cards`, then proposes a card or a job-to-evidence mapping through validated tools. It cannot confirm cards or merge records. Invalid citations are returned for correction. Runs are bounded to seven requests, each with a 45-second timeout.
+- **Agent:** uses `read_source` and `search_cards`, then proposes a card or a job-to-evidence mapping through validated tools. It cannot confirm cards or merge records. Invalid citations are returned for correction. Runs are bounded to seven requests, with a 45-second network I/O timeout.
 
-To enable the agent, copy `.env.example` to `.env` and set `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`. Your endpoint must support Chat Completions function calling, `tool_choice: required`, and `max_tokens`. Restart and select Agent mode in the header; the browser remembers your choice. Relevant notes, cards and job descriptions are sent to that provider. The header distinguishes configured model and active mode from local data storage. Mocked protocol tests cover integration behavior. On 2026-11-02, a fictional experience-draft task succeeded against `qwen3.5-plus`, including source reading and citation validation; live job matching and weekly synthesis remain unverified for that model.
+To enable the agent, copy `.env.example` to `.env` and set `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`. Your endpoint must support Chat Completions function calling, `tool_choice: required`, and `max_tokens`. Restart and select Agent mode in the header; the browser remembers your choice. Relevant notes, cards and job descriptions are sent to that provider. The header distinguishes configured model and active mode from local data storage. Mocked protocol tests cover integration behavior. Before the Python migration, on 2026-11-02, a fictional experience-draft task succeeded against `qwen3.5-plus`, including source reading and citation validation; live job matching and weekly synthesis remain unverified for that model.
 
 ## Persistence and limits
 
@@ -44,9 +44,9 @@ Entries, experience cards and reports can be moved to Trash and restored. Deleti
 ## Development
 
 ```bash
-npm run dev
-npm run check
-npm test
+python3 -m career_ledger
+python3 -m compileall -q career_ledger
+python3 -m unittest discover -s tests -v
 ```
 
 Tests exercise evidence validation, review gates, revision conflicts, snapshots, concurrent persistence, tool loops and API failures. Model responses are mocked. HTTP tests require permission to bind ephemeral loopback ports.
