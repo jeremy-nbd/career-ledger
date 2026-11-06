@@ -8,20 +8,63 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 
 [![Tests](https://github.com/jeremy-nbd/career-ledger/actions/workflows/test.yml/badge.svg)](https://github.com/jeremy-nbd/career-ledger/actions/workflows/test.yml)
 ![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-3776AB)
-![License MIT](https://img.shields.io/badge/license-MIT-blue)
+[![License MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Zero runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-677f59)
 
-[开始使用](#快速开始) · [技术路线](#技术路线) · [模型接入](#可选连接模型-agent) · [架构](docs/architecture.md) · [English](docs/README.en.md)
+[操作演示](#操作演示) · [核心亮点](#核心亮点) · [系统架构](#系统架构) · [快速开始](#快速开始) · [技术路线](#技术路线) · [MIT 许可证](LICENSE) · [English](docs/README.en.md)
 
 </div>
 
-工作时留下周报、笔记和复盘；找机会时，知道哪些经历可以支撑岗位要求，以及哪些问题还没有证据。
+经历账本是一个以 Python 为主的开源 Agent 项目，帮助个人把日常工作记录整理成带原文引用的经历卡片、工作周报和岗位分析。项目将原文保存、模型整理、人工确认和证据导出连接成可实际使用的流程。
 
-经历账本把这件事连接起来：
+![经历库展示，使用虚构演示资料](docs/library-showcase.jpg)
 
-**原始记录 → 带引用的经历草稿 → 本人核对 → 岗位要求与证据对应 → Markdown 经历精选。**
+## 操作演示
 
-![经历库展示：完整卡片、确认状态与原文证据，使用虚构演示资料](docs/library-showcase.jpg)
+[观看或下载 35 秒演示视频（MP4）](docs/demo.mp4)
+
+视频用 Python 版真实操作截图制作步骤回放，使用本地规则模式与虚构资料。展示收件箱、经历库、原文核对、岗位分析、日报填写、周报生成与引用查看，每个步骤停留 5 秒。
+
+<details>
+<summary>在 README 内展开动图演示</summary>
+
+![Python 版操作步骤回放](docs/demo.gif)
+
+</details>
+
+## 核心亮点
+
+| 场景 | 已实现能力 | 可查看的实现 |
+| --- | --- | --- |
+| 工作记录容易遗忘 | 日报按日期保存，自选时间段生成有引用的周报 | [日期筛选与报告生成](career_ledger/domain.py) |
+| 经历表述需要依据 | 每条引用逐字校验，经历由本人核对后确认 | [证据与确认接口](career_ledger/server.py) |
+| 模型输出可能缺少证据 | Agent 先读取或检索，再提交结果，校验错误返回模型修正 | [工具调用循环](career_ledger/agent.py) |
+| 后续修订影响旧材料复查 | 报告保存原文快照，经历保存修订历史，删除可恢复 | [数据存储](career_ledger/store.py) · [恢复规则](career_ledger/trash.py) |
+| 需要方便运行与验证 | Python 标准库后端，18 项自动化测试，多版本 CI | [回归测试](tests/test_backend.py) · [CI](.github/workflows/test.yml) |
+
+## 系统架构
+
+```mermaid
+flowchart LR
+    subgraph client ["本机浏览器"]
+        web["HTML / CSS / JavaScript"]
+    end
+    subgraph service ["Python 后端"]
+        backend["HTTP API · 规则处理 · Agent · 引用校验"]
+    end
+    subgraph datastore ["本机持久化"]
+        ledger[("ledger.json")]
+    end
+    subgraph external ["可选模型服务"]
+        model["Chat Completions 兼容接口"]
+    end
+    web <-->|"JSON API"| backend
+    backend <-->|"串行写入与历史快照"| ledger
+    backend -.->|"任务材料与工具定义"| model
+    model -.->|"工具调用与结构化结果"| backend
+```
+
+后端根据任务执行日期筛选、经历检索和领域校验。Agent 使用模型返回的工具调用推进任务，结果通过校验后写入账本。浏览器提供原文核对与确认入口。详细数据结构和访问限制见 [架构说明](docs/architecture.md)。
 
 ## 一个具体例子
 
@@ -42,6 +85,35 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 - **本地备份**：一键下载完整账本 JSON。
 - **删除与恢复**：日报、原始记录、经历卡片、周报和岗位分析均可移入回收站，再按需恢复。
 - **无密钥体验**：内置虚构人物“林舟”的 4 条记录与 2 份 JD，包括贡献冲突、尚未上线和未核实数字。
+
+## 快速开始
+
+需要 **Python 3.9 或更新版本**。无运行时依赖，无需安装数据库或执行构建。
+
+```bash
+git clone https://github.com/jeremy-nbd/career-ledger.git
+cd career-ledger
+python3 -m career_ledger
+```
+
+打开 **http://127.0.0.1:4317**。
+
+第一次使用可以选择：
+
+1. 点击「体验虚构示例」，查看卡片与待核对问题；
+2. 或直接粘贴自己的工作记录，点击「保存并整理」；
+3. 在经历库核对贡献和结果，勾选本人确认；
+4. 在岗位工作台粘贴 JD，分析并导出 Markdown。
+
+演示只允许载入空账本，避免混入现有资料。若要单独体验示例，可用独立数据目录启动：
+
+```bash
+CAREER_DATA_DIR=./data/demo python3 -m career_ledger
+```
+
+日常账本仍使用默认的 `data/ledger.json`。同一数据目录只运行一个服务进程。Python 服务会获取数据目录进程锁。
+
+从旧版升级时，先停止原有 Node.js 服务并备份账本，再执行上述 Python 启动命令。Python 版直接读取原有 `.env` 和 version-1 `ledger.json`，保留日报、经历修订、回收站及报告快照。Windows 可将命令中的 `python3` 替换为 `python`。
 
 ## 技术路线
 
@@ -80,35 +152,6 @@ A local-first career evidence agent. Turn work notes into reviewed experience ca
 - **密钥留在服务端**：账本默认保存到 `data/ledger.json`，模型配置来自 `.env`。只有选择模型模式时，任务所需材料才会发送到配置的模型服务。
 
 更完整的数据结构、校验规则和部署边界见 [架构说明](docs/architecture.md)。
-
-## 快速开始
-
-需要 **Python 3.9 或更新版本**。无运行时依赖，无需安装数据库或执行构建。
-
-```bash
-git clone https://github.com/jeremy-nbd/career-ledger.git
-cd career-ledger
-python3 -m career_ledger
-```
-
-打开 **http://127.0.0.1:4317**。
-
-第一次使用可以选择：
-
-1. 点击「体验虚构示例」，查看卡片与待核对问题；
-2. 或直接粘贴自己的工作记录，点击「保存并整理」；
-3. 在经历库核对贡献和结果，勾选本人确认；
-4. 在岗位工作台粘贴 JD，分析并导出 Markdown。
-
-演示只允许载入空账本，避免混入现有资料。若要单独体验示例，可用独立数据目录启动：
-
-```bash
-CAREER_DATA_DIR=./data/demo python3 -m career_ledger
-```
-
-日常账本仍使用默认的 `data/ledger.json`。同一数据目录只运行一个服务进程。Python 服务会获取数据目录进程锁。
-
-从旧版升级时，先停止原有 Node.js 服务并备份账本，再执行上述 Python 启动命令。Python 版直接读取原有 `.env` 和 version-1 `ledger.json`，保留日报、经历修订、回收站及报告快照。Windows 可将命令中的 `python3` 替换为 `python`。
 
 ## 两种模式，明确区分
 
@@ -218,6 +261,6 @@ docs/            设计说明、英文介绍与手动验收流程
 
 欢迎通过 Issue 讨论具体场景。提交问题时使用虚构或脱敏材料，参见 [贡献说明](CONTRIBUTING.md)。
 
-## License
+## 开源许可证
 
-[MIT](LICENSE)
+项目采用 MIT License，允许使用、复制、修改、分发和商业使用。分发时须保留版权声明与许可文本，完整授权条款见仓库根目录的 [LICENSE](LICENSE)。
